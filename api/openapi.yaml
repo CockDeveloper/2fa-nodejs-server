@@ -1,0 +1,137 @@
+openapi: 3.0.1
+info:
+  title: Two Factor Authentication (2FA)
+  description: This is a sample server 2FA server.  You can find api generate data
+    for 2FA.
+  license:
+    name: MIT
+  version: 1.0.0
+servers:
+- url: http://localhost:8080/v1
+tags:
+- name: tfa
+  description: Generate 2FA value
+- name: qr
+  description: Generate qr from text
+paths:
+  /qr/generate:
+    post:
+      tags:
+      - qr
+      summary: Generate qr by text
+      operationId: generate
+      requestBody:
+        description: Text for generate qr
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultGenerate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResultGenerate'
+        required: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            image/png:
+              schema:
+                type: string
+                format: base64
+                x-content-type: image/png
+        "405":
+          description: Invalid input
+          content: {}
+      x-codegen-request-body-name: body
+      x-swagger-router-controller: Qr
+  /2fa/generate/{emailId}@{emailDomain}:
+    get:
+      tags:
+      - tfa
+      summary: Generate text by email
+      description: Generate text by a email
+      operationId: generateWithEmail
+      parameters:
+      - name: emailId
+        in: path
+        description: email for generate
+        required: true
+        style: simple
+        explode: true
+        schema:
+          type: string
+      - name: emailDomain
+        in: path
+        description: domain email for generate
+        required: true
+        style: simple
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ResultGenerate'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultGenerate'
+        "400":
+          description: Invalid status value
+          content: {}
+      x-swagger-router-controller: Tfa
+  /2fa/verify/{email}/{otp}:
+    get:
+      tags:
+      - tfa
+      summary: Verify otp
+      description: Verify otp
+      operationId: verify
+      parameters:
+      - name: email
+        in: path
+        description: email for generate
+        required: true
+        style: simple
+        explode: true
+        schema:
+          type: string
+      - name: otp
+        in: path
+        description: value otp for email
+        required: true
+        style: simple
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                type: object
+                x-content-type: application/xml
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Invalid status value
+          content: {}
+      x-swagger-router-controller: Tfa
+components:
+  schemas:
+    ResultGenerate:
+      required:
+      - generateRaw
+      type: object
+      properties:
+        generateRaw:
+          type: string
+          example: opt://abc?secret=abc&email=example@domain.com
+      example:
+        generateRaw: opt://abc?secret=abc&email=example@domain.com
+      xml:
+        name: ResultGenerate
